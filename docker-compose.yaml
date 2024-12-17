@@ -1,0 +1,25 @@
+version: "3.8"
+services:
+  cs-generator:
+    image: csgenerator
+    command: "TEST" # This can be changed dynamically
+    volumes:
+      - qc-volume:/QualitasCorpus
+    environment:
+      DELAY: 3000
+      TARGET: "http://cs-consumer:3000"
+    depends_on:
+      - cs-consumer
+    restart: "no" # Don't restart generator automatically
+  
+  cs-consumer:
+    image: csconsumer
+    volumes:
+      - ./Containers/CodeStreamConsumer/src:/app/src
+    ports:
+      - 8080:3000
+    restart: "always" # Ensures consumer runs constantly
+
+volumes:
+  qc-volume:
+    external: true

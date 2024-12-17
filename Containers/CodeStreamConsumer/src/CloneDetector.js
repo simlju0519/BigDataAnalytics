@@ -92,8 +92,23 @@ class CloneDetector {
         // Return: file, including file.instances which is an array of Clone objects (or an empty array).
         //
 
-        file.instances = file.instances || [];        
+        console.log('Comparing chunks: ', file.name, 'to', compareFile.name);
+
+        file.instances = file.instances || [];
+        let newInstances = [];
+
+        file.chunks.map( (fileChunk, idx) => {
+            compareFile.chunks.map( (compareChunk, compareIdx) => {
+                if (this.#chunkMatch(fileChunk, compareChunk)) {
+                    // console.log('Match found between', file.name, 'and', compareFile.name, 'at', idx, 'and', compareIdx);
+                    let clone = new Clone(file.name, compareFile.name, fileChunk, compareChunk);
+                    newInstances.push(clone);
+                }
+            });
+        });
+        
         file.instances = file.instances.concat(newInstances);
+        console.log('Found', file.instances.length, 'clone chunks between', file.name, 'and', compareFile.name);
         return file;
     }
      
@@ -112,6 +127,26 @@ class CloneDetector {
         //         and not any of the Clones used during that expansion.
         //
 
+        console.log('Expanding clones in', file.name);
+        file.instances = file.instances.reduce((accumulator, currentClone) =>{
+            let expanded = false;
+            for (let clone of accumulator) {
+                expanded = currentClone.maybeExpandWith(clone) || expanded;
+
+                if (expanded) {
+                    break;
+                }
+            }
+            if (!expanded) {
+                accumulator.push(currentClone);
+            }
+
+            return accumulator;
+        }, []);
+
+
+        console.log('Expanded clones in', file.name, 'to', file.instances.length);
+
         return file;
     }
     
@@ -128,6 +163,20 @@ class CloneDetector {
         //
         // Return: file, with file.instances containing unique Clone objects that may contain several targets
         //
+
+        console.log('Consolidating clones in', file.name);
+
+        file.instances = file.instances.reduce((accumulator, currentClone) => {
+            let existingClone = accumulator.find( clone => clone.equals(currentClone) );
+            if (existingClone) {
+                existingClone.addTarget(currentClone);
+            } else {
+                accumulator.push(currentClone);
+            }
+            return accumulator;
+        }, []);
+
+        console.log('Consolidated clones in', file.name, 'to', file.instances.length);
 
         return file;
     }
@@ -170,6 +219,7 @@ class CloneDetector {
             //
             // 3. If the same clone is found in several places, consolidate them into one Clone.
             //
+            console.log('Comparing', file.name, 'to', f.name);
             file = this.#filterCloneCandidates(file, f); 
             file = this.#expandCloneCandidates(file);
             file = this.#consolidateClones(file); 
