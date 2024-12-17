@@ -181,7 +181,6 @@ class CloneDetector {
         return file;
     }
     
-
     // Public Processing Steps
     // --------------------
     preprocess(file) {

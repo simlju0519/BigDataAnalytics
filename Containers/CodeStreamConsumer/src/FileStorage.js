@@ -7,6 +7,7 @@ class FileStorage {
 
     #myFiles = [];
     #myFileNames = [];
+    #allTimings = [];
     #myNumberOfFiles = 0;
 
     constructor() {
@@ -26,11 +27,22 @@ class FileStorage {
             this.#myFileNames.push(file.name);
             this.#myNumberOfFiles++;
 
+            let timingData = {
+                filename: file.name,
+                timers: file.timers
+            }
+                
+            this.#allTimings.push(timingData);
+
             // FUTURE Use a database instead.
             this.#myFiles.push(file);
         }
 
         return file;
+    }
+
+    getTimingData() {
+        return this.#allTimings;
     }
 
     * getAllFiles() {

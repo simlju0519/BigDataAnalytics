@@ -8,6 +8,7 @@ const Timer = require('./Timer');
 const CloneDetector = require('./CloneDetector');
 const CloneStorage = require('./CloneStorage');
 const FileStorage = require('./FileStorage');
+const { get } = require('http');
 
 
 // Express and Formidable stuff to receice a file for further processing
@@ -48,6 +49,58 @@ function lastFileTimersHTML() {
     return output;
 }
 
+function listTop20FileTimersHTML() {
+
+    let fs = FileStorage.getInstance();
+    let allTimings = fs.getTimingData();
+
+    // Check if there are any files
+    if (allTimings.length === 0) return '';
+
+    // Generate output
+    let output = '<HR>\n<H2>Timers for top 20 processed files</H2>\n';
+    output += '<ul>\n';
+    allTimings.slice(0, 20).forEach( timing => {
+        output += '<li>' + timing.filename + '\n';
+        output += '<ul>\n';
+        for (let t in timing.timers) {
+            output += '<li>' + t + ': ' + (timing.timers[t] / 1000n) + ' µs\n';
+        }
+        output += '</ul>\n';
+    });
+    output += '</ul>\n';
+    return output;
+}
+
+function getAverageTimePerFile() {
+    let fs = FileStorage.getInstance();
+    let allTimings = fs.getTimingData();
+
+    // Check if there are any files
+    if (allTimings.length === 0) return '';
+
+    // Sum only the 'total' time for each file
+    let total = allTimings.reduce((sum, timing) => {
+        return sum + (timing.timers['total'] || 0n); // Use 'total' or 0n if missing
+    }, 0n);
+
+    let match = allTimings.reduce((sum, timing) => {
+        return sum + (timing.timers['match'] || 0n); // Use 'total' or 0n if missing
+    }, 0n);
+
+    // Calculate average
+    let averageTimeTotal = (total / BigInt(allTimings.length)) / 1000n;
+
+    let averageTimeMatch = (match / BigInt(allTimings.length)) / 1000n;
+
+    // Generate output
+    let output = '<HR>\n<H2>Average Time execution</H2>\n';
+    output += '<p>Average time on total time: ' + averageTimeTotal + ' µs\n';
+    output += '<p>Average time on match time: ' + averageTimeMatch + ' µs\n';
+    return output;
+}
+
+
 function listClonesHTML() {
     let cloneStore = CloneStorage.getInstance();
     let output = '';
@@ -85,6 +138,8 @@ function viewClones(req, res, next) {
     page += '<BODY><H1>CodeStream Clone Detector</H1>\n';
     page += '<P>' + getStatistics() + '</P>\n';
     page += lastFileTimersHTML() + '\n';
+    page += getAverageTimePerFile() + '\n';
+    page += listTop20FileTimersHTML() + '\n';
     page += listClonesHTML() + '\n';
     page += listProcessedFilesHTML() + '\n';
     page += '</BODY></HTML>';
