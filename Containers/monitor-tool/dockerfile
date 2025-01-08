@@ -1,0 +1,13 @@
+FROM python:3.9
+
+WORKDIR /usr/src/app
+
+# Copy the application code
+COPY monitor.py .
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Run the MonitorTool script
+CMD ["python", "monitor.py"]

@@ -5,15 +5,25 @@
             [cljdetector.storage.storage :as storage]))
 
 (def DEFAULT-CHUNKSIZE 5)
-(def source-dir (or (System/getenv "SOURCEDIR") "/tmp"))
+;; (def source-dir (or (System/getenv "SOURCEDIR") "/tmp"))
+(def source-dir (or (System/getenv "SOURCEDIReclipse") "/tmp"))
 (def source-type #".*\.java")
 
+;; (defn ts-println [& args]
+;;   (println (.toString (java.time.LocalDateTime/now)) args))
+
 (defn ts-println [& args]
-  (println (.toString (java.time.LocalDateTime/now)) args))
+  (let [timestamp (.toString (java.time.LocalDateTime/now))
+        message (apply str args)]
+    ;; Log to terminal
+    (println "[" timestamp "]" message)
+    ;; Log to database
+    (storage/add-update! {:timestamp timestamp :message message})))
+
 
 (defn maybe-clear-db [args]
   (when (some #{"CLEAR"} (map string/upper-case args))
-      (ts-println "Clearing database...")
+      (ts-println "Clearing database... loool")
       (storage/clear-db!)))
 
 (defn maybe-read-files [args]
