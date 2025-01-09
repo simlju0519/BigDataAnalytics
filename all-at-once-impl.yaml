@@ -3,7 +3,8 @@
 version: "3.8"
 services:
   clone-detector:
-    image: cljdetector
+    build:
+      context: ./Containers/cljdetector  # Assuming CloneDetector Dockerfile is here
     command: clear 
     ports:
       - 8080:3000
@@ -32,7 +33,6 @@ services:
   monitor-tool:
     build:
       context: ./Containers/monitor-tool  # Assuming MonitorTool Dockerfile is here
-    restart: always
     depends_on:
       - dbstorage
     environment:

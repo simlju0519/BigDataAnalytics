@@ -7,6 +7,7 @@
 (def DEFAULT-CHUNKSIZE 5)
 ;; (def source-dir (or (System/getenv "SOURCEDIR") "/tmp"))
 (def source-dir (or (System/getenv "SOURCEDIReclipse") "/tmp"))
+;; (def source-dir (or (System/getenv "SOURCEDIRtest") "/tmp"))
 (def source-type #".*\.java")
 
 ;; (defn ts-println [& args]
@@ -74,4 +75,5 @@
   (maybe-detect-clones args)
   (maybe-list-clones args)
   (ts-println "Summary")
-  (storage/print-statistics))
+  (storage/print-statistics)
+  (ts-println "stop-monitoring"))
